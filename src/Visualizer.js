@@ -9,8 +9,8 @@ const createVisualizer = (width, height, queryElement) => {
     const audioBox = document.createElement('div');
     audioBox.className = 'audioBox';
 
-    const analyzer = document.createElement('canvas')
-    analyzer.className = 'analyzerRenderer';
+    const analyser = document.createElement('canvas')
+    analyser.className = 'analyserRenderer';
 
 
     setAttributes(visualizer, {
@@ -27,7 +27,7 @@ const createVisualizer = (width, height, queryElement) => {
         float: 'left'
     });
 
-    setAttributes(analyzer, {
+    setAttributes(analyser, {
         width: `${width}px`,
         height: `${height / 2}px`,
         background: '#002d3c',
@@ -36,49 +36,82 @@ const createVisualizer = (width, height, queryElement) => {
 
     queryElement.append(visualizer);
     visualizer.append(audioBox);
-    visualizer.append(analyzer);
+    visualizer.append(analyser);
 
     return visualizer;
 }
 
-let visualizer = createVisualizer(500, 60, document.querySelector('body'));
+export default class Visualizer {
+    constructor() {
+        this._visualizer = createVisualizer(500, 60, document.querySelector('body'));
+        this._canvas = this._visualizer.querySelector('.analyserRenderer');
+        this._ctx = this._canvas.getContext('2d');
 
-let audio = new Audio();
-audio.src = './track.m4a';
-audio.controls = true;
-audio.autoplay = true;
-audio.loop = true;
-audio.volume = 0.1;
+        this._audio = this._createAudio();
+        this._visualizer.querySelector('.audioBox').append(this._audio);
 
-let canvas, ctx, source, audioCtx, analyzer, fbcArray, bars, barX, barWidth, barHeight;
-window.addEventListener('load', initMp3Player, false);
+        this._audioCtx = new AudioContext();
 
-function initMp3Player() {
-    visualizer.querySelector('.audioBox').append(audio);
-    audioCtx = new AudioContext();
-    analyzer = audioCtx.createAnalyser();
+        this._analyser = this._audioCtx.createAnalyser();
+        this._analyser.connect(this._audioCtx.destination);
 
-    canvas = visualizer.querySelector('.analyzerRenderer');
-    ctx = canvas.getContext('2d');
+        this._source = this._audioCtx.createMediaElementSource(this._audio);
+        this._source.connect(this._analyser);
 
-    source = audioCtx.createMediaElementSource(audio);
-    source.connect(analyzer);
-    analyzer.connect(audioCtx.destination)
-    animate();
-}
+        this._animate = this._animate.bind(this);
+        this._animate();
+    }
 
-function animate() {
-    requestAnimationFrame(animate);
-    fbcArray = new Uint8Array(analyzer.frequencyBinCount);
-    analyzer.getByteFrequencyData(fbcArray);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#00ccff';
-    bars = 100;
+    _createAudio() {
+        let audio = new Audio();
+        audio.src = './track.m4a';
+        audio.controls = true;
+        audio.autoplay = true;
+        audio.loop = true;
+        audio.volume = 0.1;
 
-    for (let i = 0; i < bars; i++) {
-        barX = i * 3;
-        barWidth = 2;
-        barHeight = -(fbcArray[i] / 2);
-        ctx.fillRect(barX, canvas.height, barWidth, barHeight);
+        return audio;
+    }
+
+    _setMediaSource(src) {
+        this._audio.src = src;
+    }
+
+    playAudio() {
+        this._audio.play();
+    }
+
+    pauseAudio() {
+        this._audio.pause();
+    }
+
+    reload() {
+        this._audio.reload();
+    }
+
+    render() {
+
+    }
+
+    update() {
+
+    }
+
+    _animate() {
+        requestAnimationFrame(this._animate);
+        const fbcArray = new Uint8Array(this._analyser.frequencyBinCount);
+
+        this._analyser.getByteFrequencyData(fbcArray);
+        this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+        this._ctx.fillStyle = '#00ccff';
+
+        const bars = 100;
+
+        for (let i = 0; i < bars; i++) {
+            const barX = i * 3;
+            const barWidth = 2;
+            const barHeight = -(fbcArray[i] / 2);
+            this._ctx.fillRect(barX, this._canvas.height, barWidth, barHeight);
+        }
     }
 }
