@@ -50,24 +50,19 @@ export default class Visualizer {
         this._ctx = this._canvas.getContext('2d');
 
         this._audio = this._createAudio();
-        this._visualizer.querySelector('.audioBox').append(this._audio);
-
         this._audioCtx = new AudioContext();
-
         this._analyser = this._audioCtx.createAnalyser();
         this._analyser.connect(this._audioCtx.destination);
-
         this._source = this._audioCtx.createMediaElementSource(this._audio);
         this._source.connect(this._analyser);
 
-        this._audioSrcs = ['./track2.webm', './track.m4a'];
         this._currentIdx = 0;
+        this._audioSrcs = ['./track2.webm', './track.m4a'];
         this._setMediaSource(this._audioSrcs[0]);
 
         this._fbcArray = [];
 
         this._setupEvents();
-
         this._animate = this._animate.bind(this);
         this._animate();
     }
@@ -84,6 +79,7 @@ export default class Visualizer {
                 default: this.togglePlay(); break;
             }
         });
+        window.addEventListener('beforeunload', () => this._audioCtx.close());
         this._audio.addEventListener('ended', () => {
             this.playNext();
         });
@@ -92,9 +88,10 @@ export default class Visualizer {
     _createAudio() {
         let audio = new Audio();
         audio.controls = true;
-        audio.autoplay = true;
+        audio.autoplay = false;
         audio.volume = 0.1;
 
+        this._visualizer.querySelector('.audioBox').append(audio);
         return audio;
     }
 
@@ -113,10 +110,12 @@ export default class Visualizer {
 
     playAudio() {
         this._audio.play();
+        this._audioCtx.resume();
     }
 
     pauseAudio() {
         this._audio.pause();
+        this._audioCtx.suspend();
     }
 
     volumeUp() {
