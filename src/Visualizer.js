@@ -1,53 +1,29 @@
 import { shuffleArray } from './Utility';
 
-const setAttributes = (elem, attrs) => {
-    Object.assign(elem.style, attrs);
-}
+class Bar {
+    constructor(x, y, width, height) {
+        this._x = x;
+        this._y = y;
+        this._width = width;
+        this._height = height;
+    }
 
-const createVisualizer = (width, height, queryElement) => {
-    const visualizer = document.createElement('div');
-    visualizer.className = 'visualizer';
-
-    const audioBox = document.createElement('div');
-    audioBox.className = 'audioBox';
-
-    const analyser = document.createElement('canvas')
-    analyser.className = 'analyserRenderer';
-
-
-    setAttributes(visualizer, {
-        width: `${width}px`,
-        height: `${height}px`,
-        background: `#000`,
-        padding: '5px',
-        margin: '50px auto'
-    });
-
-    setAttributes(audioBox, {
-        width: '500px',
-        background: '#000',
-        float: 'left'
-    });
-
-    setAttributes(analyser, {
-        width: `${width}px`,
-        height: `${height / 2}px`,
-        background: '#002d3c',
-        float: 'left'
-    });
-
-    queryElement.append(visualizer);
-    visualizer.append(audioBox);
-    visualizer.append(analyser);
-
-    return visualizer;
+    render(ctx) {
+        ctx.fillRect(this._x, this._y, this._width, this._height);
+    }
 }
 
 export default class Visualizer {
     constructor() {
-        this._visualizer = createVisualizer(500, 60, document.querySelector('body'));
+        this._visualizer = document.querySelector('.visualizer');
         this._canvas = this._visualizer.querySelector('.analyserRenderer');
+        this._canvas.width = window.innerWidth;
+        this._canvas.height = window.innerHeight;
+
         this._ctx = this._canvas.getContext('2d');
+
+        this._coordinates = { x: this._canvas.width / 2, y: this._canvas.height / 2 };
+        this._magnitude = 50;
 
         this._audio = this._createAudio();
         this._audioCtx = new AudioContext();
@@ -60,6 +36,7 @@ export default class Visualizer {
         this._audioSrcs = ['./track2.webm', './track.m4a'];
         this._setMediaSource(this._audioSrcs[0]);
 
+        this._bars = Array(100).fill().map(() => new Bar());
         this._fbcArray = [];
 
         this._setupEvents();
@@ -87,7 +64,7 @@ export default class Visualizer {
 
     _createAudio() {
         let audio = new Audio();
-        audio.controls = true;
+        //audio.controls = true;
         audio.autoplay = false;
         audio.volume = 0.1;
 
@@ -193,18 +170,28 @@ export default class Visualizer {
         this._audioSrcs = shuffleArray(this._audioSrcs);
     }
 
-    _render() {
-        this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
-        this._ctx.fillStyle = '#00ccff';
+    _render(ctx) {
+        ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+        ctx.beginPath();
+        ctx.arc(this._coordinates.x, this._coordinates.y, this._magnitude, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#00ccff';
+        ctx.globalAlpha = 0.4;
 
-        const bars = 100;
-
-        for (let i = 0; i < bars; i++) {
-            const barX = i * 3;
-            const barWidth = 2;
+        for (let i = 0; i < this._bars.length; i++) {
+            const barX = this._coordinates.x + Math.cos(Math.PI) * this._magnitude;
+            const barY = this._coordinates.y + Math.sin(Math.PI) * this._magnitude;
+            const barWidth = 10;
             const barHeight = -(this._fbcArray[i] / 2);
-            this._ctx.fillRect(barX, this._canvas.height, barWidth, barHeight);
+
+            const bar = this._bars[i];
+            bar._x = barX;
+            bar._y = barY;
+            bar._width = barWidth;
+            bar._height = barHeight;
+            bar.render(ctx);
         }
+        ctx.globalAlpha = 1;
     }
 
     _update() {
@@ -214,7 +201,7 @@ export default class Visualizer {
 
     _animate() {
         requestAnimationFrame(this._animate);
-        this._render();
         this._update();
+        this._render(this._ctx);
     }
 }
