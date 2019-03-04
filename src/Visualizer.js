@@ -79,6 +79,8 @@ export default class Visualizer {
                 case 32: this.togglePlay(); break;
                 case 48: this.playNext(); break;
                 case 57: this.playPrevious(); break;
+                case 45: this.volumeDown(); break;
+                case 61: this.volumeUp(); break;
                 default: this.togglePlay(); break;
             }
         });
@@ -117,8 +119,35 @@ export default class Visualizer {
         this._audio.pause();
     }
 
+    volumeUp() {
+        if (this._audio.muted) {
+            this.unmute();
+        }
+        if (this._audio.volume < 0.9) {
+            this._audio.volume += 0.1;
+        }
+    }
+
+    volumeDown() {
+        if (this._audio.volume > 0.1) {
+            this._audio.volume -= 0.1;
+        }
+        else {
+            this.mute();
+        }
+
+    }
+
     setVolume(vol) {
-        this._audio.volume = vol / 100;
+        this._audio.volume = vol;
+    }
+
+    mute() {
+        this._audio.muted = true;
+    }
+
+    unmute() {
+        this._audio.muted = false;
     }
 
     reload() {
