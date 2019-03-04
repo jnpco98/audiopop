@@ -79,14 +79,7 @@ export default class Visualizer {
             }
         });
         this._audio.addEventListener('ended', () => {
-            this._currentIdx++;
-            if (this._currentIdx >= this._audioSrcs.length) {
-                this._currentIdx = 0;
-            }
-            this._setMediaSource(this._audioSrcs[this._currentIdx]);
-            this.pauseAudio();
-            this.reload();
-            this.playAudio();
+            this.playNext();
         });
     }
 
@@ -125,7 +118,9 @@ export default class Visualizer {
     }
 
     reload() {
+        this.pauseAudio();
         this._audio.load();
+        this.playAudio();
     }
 
     addTrack(src) {
@@ -138,6 +133,24 @@ export default class Visualizer {
                 this._audioSrcs.push(src);
             }
         }
+    }
+
+    playNext() {
+        this._currentIdx++;
+        if (this._currentIdx >= this._audioSrcs.length) {
+            this._currentIdx = 0;
+        }
+        this._setMediaSource(this._audioSrcs[this._currentIdx]);
+        this.reload();
+    }
+
+    playPrevious() {
+        this._currentIdx--;
+        if (this._currentIdx < 0) {
+            this._currentIdx = this._audioSrcs.length - 1;
+        }
+        this._setMediaSource(this._audioSrcs[this._currentIdx]);
+        this.reload();
     }
 
     removeTrack(idx) {
