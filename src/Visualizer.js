@@ -1,3 +1,5 @@
+import { shuffleArray } from './Utility';
+
 const setAttributes = (elem, attrs) => {
     Object.assign(elem.style, attrs);
 }
@@ -58,8 +60,25 @@ export default class Visualizer {
         this._source = this._audioCtx.createMediaElementSource(this._audio);
         this._source.connect(this._analyser);
 
+        this._audioSrcs = ['./track.m4a', './'];
+
+        this._fbcArray = [];
+
+        this._setupEvents();
+
         this._animate = this._animate.bind(this);
         this._animate();
+    }
+
+    _setupEvents() {
+        window.addEventListener('keypress', e => {
+            switch (e.keyCode) {
+                case 32: this.togglePlay(); break;
+            }
+        });
+        this._audio.addEventListener('ended', () => {
+            this._setMediaSource()
+        });
     }
 
     _createAudio() {
@@ -77,31 +96,48 @@ export default class Visualizer {
         this._audio.src = src;
     }
 
-    playAudio() {
-        this._audio.play();
+    togglePlay() {
+        if (this._audio.paused) {
+            this._audio.play();
+        }
+        else {
+            this._audio.pause();
+        }
     }
 
     pauseAudio() {
         this._audio.pause();
     }
 
+    setVolume(vol) {
+        this._audio.volume = vol / 100;
+    }
+
     reload() {
         this._audio.reload();
     }
 
-    render() {
-
+    addTrack(src) {
+        this._audioSrcs.push(src);
     }
 
-    update() {
-
+    addTracks(srcArray) {
+        if (Array.isArray(srcArray)) {
+            for (let src of srcArray) {
+                this._audioSrcs.push(src);
+            }
+        }
     }
 
-    _animate() {
-        requestAnimationFrame(this._animate);
-        const fbcArray = new Uint8Array(this._analyser.frequencyBinCount);
+    removeTrack(idx) {
+        this._audioSrcs = this._audioSrcs.filter((_, i) => i !== idx);
+    }
 
-        this._analyser.getByteFrequencyData(fbcArray);
+    shuffle() {
+        this._audioSrcs = shuffleArray(this._audioSrcs);
+    }
+
+    _render() {
         this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
         this._ctx.fillStyle = '#00ccff';
 
@@ -110,8 +146,19 @@ export default class Visualizer {
         for (let i = 0; i < bars; i++) {
             const barX = i * 3;
             const barWidth = 2;
-            const barHeight = -(fbcArray[i] / 2);
+            const barHeight = -(this._fbcArray[i] / 2);
             this._ctx.fillRect(barX, this._canvas.height, barWidth, barHeight);
         }
+    }
+
+    _update() {
+        this._fbcArray = new Uint8Array(this._analyser.frequencyBinCount);
+        this._analyser.getByteFrequencyData(this._fbcArray);
+    }
+
+    _animate() {
+        requestAnimationFrame(this._animate);
+        this._render();
+        this._update();
     }
 }
