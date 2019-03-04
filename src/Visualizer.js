@@ -74,8 +74,12 @@ export default class Visualizer {
 
     _setupEvents() {
         window.addEventListener('keypress', e => {
+            console.log(e.keyCode)
             switch (e.keyCode) {
                 case 32: this.togglePlay(); break;
+                case 48: this.playNext(); break;
+                case 57: this.playPrevious(); break;
+                default: this.togglePlay(); break;
             }
         });
         this._audio.addEventListener('ended', () => {
