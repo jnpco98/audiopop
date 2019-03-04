@@ -60,7 +60,9 @@ export default class Visualizer {
         this._source = this._audioCtx.createMediaElementSource(this._audio);
         this._source.connect(this._analyser);
 
-        this._audioSrcs = ['./track.m4a', './'];
+        this._audioSrcs = ['./track2.webm', './track.m4a'];
+        this._currentIdx = 0;
+        this._setMediaSource(this._audioSrcs[0]);
 
         this._fbcArray = [];
 
@@ -77,16 +79,21 @@ export default class Visualizer {
             }
         });
         this._audio.addEventListener('ended', () => {
-            this._setMediaSource()
+            this._currentIdx++;
+            if (this._currentIdx >= this._audioSrcs.length) {
+                this._currentIdx = 0;
+            }
+            this._setMediaSource(this._audioSrcs[this._currentIdx]);
+            this.pauseAudio();
+            this.reload();
+            this.playAudio();
         });
     }
 
     _createAudio() {
         let audio = new Audio();
-        audio.src = './track.m4a';
         audio.controls = true;
         audio.autoplay = true;
-        audio.loop = true;
         audio.volume = 0.1;
 
         return audio;
@@ -98,11 +105,15 @@ export default class Visualizer {
 
     togglePlay() {
         if (this._audio.paused) {
-            this._audio.play();
+            this.playAudio();
         }
         else {
-            this._audio.pause();
+            this.pauseAudio();
         }
+    }
+
+    playAudio() {
+        this._audio.play();
     }
 
     pauseAudio() {
@@ -114,7 +125,7 @@ export default class Visualizer {
     }
 
     reload() {
-        this._audio.reload();
+        this._audio.load();
     }
 
     addTrack(src) {
