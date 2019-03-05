@@ -10,23 +10,24 @@ class Bar {
         this._radians;
     }
 
+    //style 1 recs outwards/inwards
     render(ctx, coords) {
+        ctx.fillStyle = 'rgba(14, 28, 20, 0.8)'
+        ctx.strokeStyle = 'rgba(14, 28, 20, 0.8)';
+
         const rad = (Math.atan2(this._y - coords.y, this._x - coords.x))
         ctx.save();
         ctx.translate(this._x, this._y);
 
-
         ctx.rotate(rad)
-
 
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.lineTo(40, 0)
         ctx.stroke();
 
-        ctx.fillStyle = 'rgba(14, 28, 20, 0.8)'
+        //negative on -height for outside bars.
         ctx.fillRect(-this._width / 2, 0, -this._height, this._width);
-        ctx.strokeStyle = 'rgba(14, 28, 20, 0.8)';
         ctx.lineWidth = 0.1;
         if (this._height > 2) {
             ctx.beginPath();
@@ -34,6 +35,30 @@ class Bar {
             ctx.stroke();
         }
         ctx.restore();
+    }
+
+    //style 2 top or bottom
+    render2(ctx, coords) {
+        ctx.beginPath();
+        ctx.moveTo(this._x, this._y);
+        ctx.lineTo(this._x, this._y + 100)
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(40, 0)
+        ctx.stroke();
+
+        //negative on -height for outside bars.
+        ctx.fillStyle = 'rgba(14, 28, 20, 0.8)'
+        ctx.fillRect(this._x, this._y, this._width, this._height);
+        ctx.strokeStyle = 'rgba(14, 28, 20, 0.8)';
+        ctx.lineWidth = 0.1;
+        if (this._height > 2) {
+            ctx.beginPath();
+            ctx.rect(this._x, this._y, this._width, this._height);
+            ctx.stroke();
+        }
     }
 }
 
@@ -242,7 +267,7 @@ export default class Visualizer {
             bar._y = barY;
             bar._width = barWidth;
             bar._height = barHeight;
-            bar.render(ctx, this._coordinates);
+            bar.render2(ctx, this._coordinates);
         }
         ctx.globalAlpha = 1;
         this._renderText(ctx, this._coordinates.x, this._coordinates.y - this._magnitude * 0.25, this._audioMeta.artist || '', '17px monospace');
