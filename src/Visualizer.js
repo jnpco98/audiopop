@@ -84,6 +84,12 @@ export default class Visualizer {
         this._canvas = this._visualizer.querySelector('.analyserRenderer');
         this._canvas.width = window.innerWidth;
         this._canvas.height = window.innerHeight;
+        this._input = this._visualizer.querySelector('input[type="file"]');
+
+
+        this._input.addEventListener('change', () => {
+
+        });
 
         this._ctx = this._canvas.getContext('2d');
 
@@ -98,7 +104,17 @@ export default class Visualizer {
         this._source.connect(this._analyser);
 
         this._currentIdx = 0;
-        this._audioSrcs = ['./track2.mp3', './track.m4a'];
+        this._audioSrcs = ['./songs/track (1).mp3',
+            './songs/track (2).mp3',
+            './songs/track (3).mp3',
+            './songs/track (4).mp3',
+            './songs/track (5).mp3',
+            './songs/track (6).mp3',
+            './songs/track (7).mp3',
+            './songs/track (8).mp3',
+            './songs/track (9).mp3'];
+
+        shuffleArray(this._audioSrcs);
         this._setMediaSource(this._audioSrcs[0]);
 
         this._bars = Array(100).fill().map(() => new Bar());
@@ -113,7 +129,6 @@ export default class Visualizer {
 
     _setupEvents() {
         window.addEventListener('keypress', e => {
-            console.log(e.keyCode)
             switch (e.keyCode) {
                 case 32: this.togglePlay(); break;
                 case 48: this.playNext(); break;
@@ -128,18 +143,17 @@ export default class Visualizer {
             this.playNext();
         });
         this._audio.addEventListener('loadedmetadata', e => {
-            console.log(this._audio)
+            console.log(e.target.src)
             new jsmediatags.Reader(e.target.src)
                 .setTagsToRead(["title", "artist", "album"])
                 .read({
                     onSuccess: tag => {
-                        this._audioMeta.artist = tag.tags.artist;
-                        this._audioMeta.album = tag.tags.album;
-                        this._audioMeta.title = tag.tags.title;
-                        console.log(this._audioMeta);
+                        console.log(tag)
+                        this._audioMeta.artist = tag.tags.artist || 'Unknown artist';
+                        this._audioMeta.album = tag.tags.album || 'Unknown album';
+                        this._audioMeta.title = tag.tags.title || this._audio.src.split(/\/|\\/).pop().split('.')[0] || 'Unknown title';
                     },
                     onError: err => {
-                        console.log(err);
                         this._audioMeta.artist = 'Unknown artist';
                         this._audioMeta.album = 'Unknown album';
                         this._audioMeta.title = this._audio.src.split(/\/|\\/).pop().split('.')[0] || 'Unknown title';
@@ -151,7 +165,7 @@ export default class Visualizer {
     _createAudio() {
         let audio = new Audio();
         //audio.controls = true;
-        audio.autoplay = false;
+        audio.autoplay = true;
         audio.volume = 0.1;
 
         this._visualizer.querySelector('.audioBox').append(audio);
@@ -283,9 +297,9 @@ export default class Visualizer {
             bar.render(ctx, this._coordinates);
         }
         ctx.globalAlpha = 1;
-        this._renderText(ctx, this._coordinates.x, this._coordinates.y - this._magnitude * 0.25, this._audioMeta.artist || '', '17px monospace');
-        this._renderText(ctx, this._coordinates.x, this._coordinates.y, this._audioMeta.title || '', '45px monospace');
-        this._renderText(ctx, this._coordinates.x, this._coordinates.y + this._magnitude * 0.3, this._audioMeta.album || '', '30px monospace');
+        this._renderText(ctx, this._coordinates.x, this._coordinates.y - this._magnitude * 0.25, this._audioMeta.artist, '17px monospace');
+        this._renderText(ctx, this._coordinates.x, this._coordinates.y, this._audioMeta.title, '45px monospace');
+        this._renderText(ctx, this._coordinates.x, this._coordinates.y + this._magnitude * 0.3, this._audioMeta.album, '30px monospace');
     }
 
     _update() {
