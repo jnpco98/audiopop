@@ -1,4 +1,5 @@
 import { shuffleArray } from './Utility';
+import jsmediatags from 'jsmediatags/dist/jsmediatags';
 
 class Bar {
     constructor(x, y, width, height) {
@@ -41,11 +42,13 @@ export default class Visualizer {
         this._source.connect(this._analyser);
 
         this._currentIdx = 0;
-        this._audioSrcs = ['./track2.webm', './track.m4a'];
+        this._audioSrcs = ['./track2.mp3', './track.m4a'];
         this._setMediaSource(this._audioSrcs[0]);
 
         this._bars = Array(100).fill().map(() => new Bar());
         this._fbcArray = [];
+
+        this._audioMeta = { artist: undefined, album: undefined, title: undefined }
 
         this._setupEvents();
         this._animate = this._animate.bind(this);
@@ -67,6 +70,25 @@ export default class Visualizer {
         window.addEventListener('beforeunload', () => this._audioCtx.close());
         this._audio.addEventListener('ended', () => {
             this.playNext();
+        });
+        this._audio.addEventListener('loadedmetadata', e => {
+            console.log(this._audio)
+            new jsmediatags.Reader(e.target.src)
+                .setTagsToRead(["title", "artist", "album"])
+                .read({
+                    onSuccess: tag => {
+                        this._audioMeta.artist = tag.tags.artist;
+                        this._audioMeta.album = tag.tags.album;
+                        this._audioMeta.title = tag.tags.title;
+                        console.log(this._audioMeta);
+                    },
+                    onError: err => {
+                        console.log(err);
+                        this._audioMeta.artist = 'Unknown artist';
+                        this._audioMeta.album = 'Unknown album';
+                        this._audioMeta.title = this._audio.src.split(/\/|\\/).pop().split('.')[0] || 'Unknown title';
+                    }
+                });
         });
     }
 
@@ -208,9 +230,9 @@ export default class Visualizer {
             bar.render(ctx);
         }
         ctx.globalAlpha = 1;
-        this._renderText(ctx, this._coordinates.x, this._coordinates.y - this._magnitude * 0.25, 'Artist', '17px monospace');
-        this._renderText(ctx, this._coordinates.x, this._coordinates.y, 'A very long test Song title', '45px monospace');
-        this._renderText(ctx, this._coordinates.x, this._coordinates.y + this._magnitude * 0.3, 'Album', '30px monospace');
+        this._renderText(ctx, this._coordinates.x, this._coordinates.y - this._magnitude * 0.25, this._audioMeta.artist || '', '17px monospace');
+        this._renderText(ctx, this._coordinates.x, this._coordinates.y, this._audioMeta.title || '', '45px monospace');
+        this._renderText(ctx, this._coordinates.x, this._coordinates.y + this._magnitude * 0.3, this._audioMeta.album || '', '30px monospace');
     }
 
     _update() {
