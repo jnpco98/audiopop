@@ -26,14 +26,30 @@ class Bar {
         ctx.lineTo(40, 0)
         ctx.stroke();
 
-        //negative on -height for outside bars.
-        ctx.fillRect(-this._width / 2, 0, -this._height, this._width);
-        ctx.lineWidth = 0.1;
-        if (this._height > 2) {
+        ctx.lineWidth = this._width;
+
+        //roundcaps
+        ctx.lineCap = 'round';
+        if (Math.abs(this._height) > 2) {
             ctx.beginPath();
-            ctx.rect(-this._width / 2, 0, -this._height, this._width);
+            ctx.moveTo(this._width, 0);
+            ctx.lineTo(-this._height, 0)
             ctx.stroke();
         }
+        else {
+            ctx.beginPath();
+            ctx.moveTo(this._width, 0);
+            ctx.lineTo(this._width, 0)
+            ctx.stroke();
+        }
+
+
+        // if (Math.abs(this._height) > 2) {
+        //     ctx.beginPath();
+        //     ctx.moveTo(this._width, 0);
+        //     ctx.lineTo(-this._height, 0)
+        //     ctx.stroke();
+        // }
         ctx.restore();
     }
 
@@ -249,10 +265,7 @@ export default class Visualizer {
 
     _render(ctx) {
         ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
-        // ctx.beginPath();
-        // ctx.lineWidth = 3;
-        // ctx.arc(this._coordinates.x, this._coordinates.y, this._magnitude, 0, Math.PI * 2);
-        // ctx.stroke();
+
         ctx.fillStyle = '#00ccff';
         ctx.globalAlpha = 0.4;
 
@@ -267,7 +280,7 @@ export default class Visualizer {
             bar._y = barY;
             bar._width = barWidth;
             bar._height = barHeight;
-            bar.render2(ctx, this._coordinates);
+            bar.render(ctx, this._coordinates);
         }
         ctx.globalAlpha = 1;
         this._renderText(ctx, this._coordinates.x, this._coordinates.y - this._magnitude * 0.25, this._audioMeta.artist || '', '17px monospace');
