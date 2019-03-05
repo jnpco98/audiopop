@@ -9,7 +9,15 @@ class Bar {
     }
 
     render(ctx) {
+        ctx.fillStyle = 'rgba(14, 28, 20, 0.8)'
         ctx.fillRect(this._x, this._y, this._width, this._height);
+        ctx.strokeStyle = 'rgba(14, 28, 20, 0.8)';
+        ctx.lineWidth = 0.1;
+        if (this._height > 2) {
+            ctx.beginPath();
+            ctx.rect(this._x, this._y, this._width, this._height);
+            ctx.stroke();
+        }
     }
 }
 
@@ -23,7 +31,7 @@ export default class Visualizer {
         this._ctx = this._canvas.getContext('2d');
 
         this._coordinates = { x: this._canvas.width / 2, y: this._canvas.height / 2 };
-        this._magnitude = 50;
+        this._magnitude = 200;
 
         this._audio = this._createAudio();
         this._audioCtx = new AudioContext();
@@ -170,17 +178,25 @@ export default class Visualizer {
         this._audioSrcs = shuffleArray(this._audioSrcs);
     }
 
+    _renderText(ctx, x, y, txt, font, color, baseline) {
+        ctx.font = font || '15px monospace';
+        ctx.textBaseline = baseline || 'middle';
+        ctx.textAlign = 'center';
+        ctx.fillText(txt, x, y);
+    }
+
     _render(ctx) {
         ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
-        ctx.beginPath();
-        ctx.arc(this._coordinates.x, this._coordinates.y, this._magnitude, 0, Math.PI * 2);
-        ctx.stroke();
+        // ctx.beginPath();
+        // ctx.lineWidth = 3;
+        // ctx.arc(this._coordinates.x, this._coordinates.y, this._magnitude, 0, Math.PI * 2);
+        // ctx.stroke();
         ctx.fillStyle = '#00ccff';
         ctx.globalAlpha = 0.4;
 
         for (let i = 0; i < this._bars.length; i++) {
-            const barX = this._coordinates.x + Math.cos(Math.PI) * this._magnitude;
-            const barY = this._coordinates.y + Math.sin(Math.PI) * this._magnitude;
+            const barX = this._coordinates.x + Math.cos(Math.PI * 2 / this._bars.length * i) * this._magnitude - 5;
+            const barY = this._coordinates.y + Math.sin(Math.PI * 2 / this._bars.length * i) * this._magnitude;
             const barWidth = 10;
             const barHeight = -(this._fbcArray[i] / 2);
 
@@ -192,6 +208,9 @@ export default class Visualizer {
             bar.render(ctx);
         }
         ctx.globalAlpha = 1;
+        this._renderText(ctx, this._coordinates.x, this._coordinates.y - this._magnitude * 0.25, 'Artist', '17px monospace');
+        this._renderText(ctx, this._coordinates.x, this._coordinates.y, 'A very long test Song title', '45px monospace');
+        this._renderText(ctx, this._coordinates.x, this._coordinates.y + this._magnitude * 0.3, 'Album', '30px monospace');
     }
 
     _update() {
