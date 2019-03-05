@@ -7,18 +7,33 @@ class Bar {
         this._y = y;
         this._width = width;
         this._height = height;
+        this._radians;
     }
 
-    render(ctx) {
+    render(ctx, coords) {
+        const rad = (Math.atan2(this._y - coords.y, this._x - coords.x))
+        ctx.save();
+        ctx.translate(this._x, this._y);
+
+
+        ctx.rotate(rad)
+
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(40, 0)
+        ctx.stroke();
+
         ctx.fillStyle = 'rgba(14, 28, 20, 0.8)'
-        ctx.fillRect(this._x, this._y, this._width, this._height);
+        ctx.fillRect(-this._width / 2, 0, -this._height, this._width);
         ctx.strokeStyle = 'rgba(14, 28, 20, 0.8)';
         ctx.lineWidth = 0.1;
         if (this._height > 2) {
             ctx.beginPath();
-            ctx.rect(this._x, this._y, this._width, this._height);
+            ctx.rect(-this._width / 2, 0, -this._height, this._width);
             ctx.stroke();
         }
+        ctx.restore();
     }
 }
 
@@ -217,7 +232,7 @@ export default class Visualizer {
         ctx.globalAlpha = 0.4;
 
         for (let i = 0; i < this._bars.length; i++) {
-            const barX = this._coordinates.x + Math.cos(Math.PI * 2 / this._bars.length * i) * this._magnitude - 5;
+            const barX = this._coordinates.x + Math.cos(Math.PI * 2 / this._bars.length * i) * this._magnitude;
             const barY = this._coordinates.y + Math.sin(Math.PI * 2 / this._bars.length * i) * this._magnitude;
             const barWidth = 10;
             const barHeight = -(this._fbcArray[i] / 2);
@@ -227,7 +242,7 @@ export default class Visualizer {
             bar._y = barY;
             bar._width = barWidth;
             bar._height = barHeight;
-            bar.render(ctx);
+            bar.render(ctx, this._coordinates);
         }
         ctx.globalAlpha = 1;
         this._renderText(ctx, this._coordinates.x, this._coordinates.y - this._magnitude * 0.25, this._audioMeta.artist || '', '17px monospace');
