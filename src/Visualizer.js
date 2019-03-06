@@ -84,12 +84,6 @@ export default class Visualizer {
         this._canvas = this._visualizer.querySelector('.analyserRenderer');
         this._canvas.width = window.innerWidth;
         this._canvas.height = window.innerHeight;
-        this._input = this._visualizer.querySelector('input[type="file"]');
-
-
-        this._input.addEventListener('change', () => {
-
-        });
 
         this._ctx = this._canvas.getContext('2d');
 
@@ -104,7 +98,9 @@ export default class Visualizer {
         this._source.connect(this._analyser);
 
         this._currentIdx = 0;
-        this._audioSrcs = ['./songs/track (1).mp3',
+        this._audioSrcs = [
+            './songs/track (0).mp3',
+            './songs/track (1).mp3',
             './songs/track (2).mp3',
             './songs/track (3).mp3',
             './songs/track (4).mp3',
@@ -113,7 +109,6 @@ export default class Visualizer {
             './songs/track (7).mp3',
             './songs/track (8).mp3',
             './songs/track (9).mp3'];
-
         shuffleArray(this._audioSrcs);
         this._setMediaSource(this._audioSrcs[0]);
 
@@ -148,7 +143,6 @@ export default class Visualizer {
                 .setTagsToRead(["title", "artist", "album"])
                 .read({
                     onSuccess: tag => {
-                        console.log(tag)
                         this._audioMeta.artist = tag.tags.artist || 'Unknown artist';
                         this._audioMeta.album = tag.tags.album || 'Unknown album';
                         this._audioMeta.title = tag.tags.title || this._audio.src.split(/\/|\\/).pop().split('.')[0] || 'Unknown title';
@@ -160,12 +154,18 @@ export default class Visualizer {
                     }
                 });
         });
+
+        window.addEventListener('resize', () => {
+            this._canvas.width = window.innerWidth;
+            this._canvas.height = window.innerHeight;
+            this._coordinates = { x: this._canvas.width / 2, y: this._canvas.height / 2 };
+        });
     }
 
     _createAudio() {
         let audio = new Audio();
         //audio.controls = true;
-        audio.autoplay = true;
+        audio.autoplay = false;
         audio.volume = 0.1;
 
         this._visualizer.querySelector('.audioBox').append(audio);
