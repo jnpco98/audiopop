@@ -10,3 +10,7 @@ export function shuffleArray(arr) {
         arr[randomIndex] = temporaryValue;
     }
 }
+
+export function map(num, rngA, rngB, rngC, rngD) {
+    return (num - rngA) * ((rngD - rngC) / (rngB - rngA)) + rngC
+}
