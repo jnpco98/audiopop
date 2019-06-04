@@ -83,7 +83,7 @@ export default class Visualizer {
         this._visualizer = document.querySelector('.visualizer');
         this._canvas = this._visualizer.querySelector('.analyserRenderer');
         this._canvas.width = window.innerWidth;
-        this._canvas.height = window.innerHeight;
+        this._canvas.height = window.innerHeight * 0.9;
 
         this._ctx = this._canvas.getContext('2d');
 
@@ -98,19 +98,9 @@ export default class Visualizer {
         this._source.connect(this._analyser);
 
         this._currentIdx = 0;
-        this._audioSrcs = [
-            './songs/track (0).mp3',
-            './songs/track (1).mp3',
-            './songs/track (2).mp3',
-            './songs/track (3).mp3',
-            './songs/track (4).mp3',
-            './songs/track (5).mp3',
-            './songs/track (6).mp3',
-            './songs/track (7).mp3',
-            './songs/track (8).mp3',
-            './songs/track (9).mp3'];
-        shuffleArray(this._audioSrcs);
+        this._audioSrcs = ['./songs/track (0).mp3', './songs/track (1).mp3', './songs/track (2).mp3'];
         this._setMediaSource(this._audioSrcs[0]);
+        shuffleArray(this._audioSrcs);
 
         this._bars = Array(100).fill().map(() => new Bar());
         this._fbcArray = [];
@@ -125,11 +115,11 @@ export default class Visualizer {
     _setupEvents() {
         window.addEventListener('keypress', e => {
             switch (e.keyCode) {
-                case 32: this.togglePlay(); break;
-                case 48: this.playNext(); break;
-                case 57: this.playPrevious(); break;
-                case 45: this.volumeDown(); break;
-                case 61: this.volumeUp(); break;
+                case 32: this.togglePlay(); break; //space
+                case 112: this.playPrevious(); break; //p
+                case 110: this.playNext(); break; // n
+                case 57: this.volumeDown(); break; //9
+                case 48: this.volumeUp(); break; //0
                 default: this.togglePlay(); break;
             }
         });
@@ -157,7 +147,7 @@ export default class Visualizer {
 
         window.addEventListener('resize', () => {
             this._canvas.width = window.innerWidth;
-            this._canvas.height = window.innerHeight;
+            this._canvas.height = window.innerHeight * 0.9;
             this._coordinates = { x: this._canvas.width / 2, y: this._canvas.height / 2 };
         });
     }

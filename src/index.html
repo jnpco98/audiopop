@@ -10,17 +10,16 @@
             padding: 0;
             overflow: hidden;
         }
-
-        canvas {
-            border: 1px solid black;
-        }
     </style>
 </head>
 
 <body>
-    <div class="visualizer">
+    <div id="dropzone" class="visualizer" style='text-align: center'>
         <div class="audioBox"></div>
-        <canvas class="analyserRenderer"></canvas>
+        <canvas class="analyserRenderer">
+        </canvas>
+        <p style='font-family: Lucida Sans;'>Space - Play/Pause || N - Next || P - Previous || 9 - VolDown || 0 - VolUp
+        </p>
     </div>
 </body>
 

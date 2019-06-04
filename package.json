@@ -35,6 +35,7 @@
     ]
   },
   "dependencies": {
+    "drag-drop": "^4.2.0",
     "jsmediatags": "^3.8.1"
   }
 }
